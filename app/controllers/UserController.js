@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const JWT = require('jsonwebtoken');
-const DBService = require('../../src/services/db.service.js');
 
 const encodeToken = (UserId) => {
     return JWT.sign({
@@ -14,12 +13,11 @@ const encodeToken = (UserId) => {
 class UserController {
     async signUp(req, res) {
         const { username, password } = req.body;
-        const user = await DBService.getDocByFilter('User', { username });
-        // const user = await User.findOne({ username });
-        // if (user) return res.status(403).json({ message: 'username is already exist.' });
-        // const newUser = new User({ username, password });
-        // newUser.save();
-        res.status(200).json({ user });
+        const user = await User.findOne({ username });
+        if (user) return res.status(403).json({ message: 'username is already exist.' });
+        const newUser = new User({ username, password });
+        newUser.save();
+        res.status(200).json({ message: 'Created successfully.' });
     }
 
     async signIn(req, res) {
@@ -27,7 +25,6 @@ class UserController {
         const user = await User.findOne({ username });
         if (!user) return res.status(403).json({ message: 'username is not exist.' });
         const token = encodeToken(user._id);
-        // res.setHeader('Authorization', token);
         res.status(200).json({ accessToken: token });
     }
 

@@ -1,5 +1,5 @@
 const Joi = require('@hapi/joi')
-const { unlink } = require('fs/promises');
+const { unlinkSingleFile, unlinkMultipleFiles } = require('../../src/helpers/unlink.helper');
 const validateBody = (schema) => {
 
     return (req, res, next) => {
@@ -7,10 +7,16 @@ const validateBody = (schema) => {
         const validatorResult = schema.validate(req.body)
 
         if (validatorResult.error) {
+
             if (req.file) {
-                unlink(req.file.path);
+                unlinkSingleFile(req.file);
             }
-            return res.status(400).json(validatorResult.error)
+
+            if (req.files?.length >= 0) {
+                unlinkMultipleFiles(req.files);
+            }
+
+            return res.status(400).json(validatorResult.error.details[0].message);
         } else {
             next();
         }
@@ -21,10 +27,16 @@ const validateParam = (schema, name) => {
     return (req, res, next) => {
         const validatorResult = schema.validate({ param: req.params[name] })
         if (validatorResult.error) {
+
             if (req.file) {
-                unlink(req.file.path);
+                unlinkSingleFile(req.file);
             }
-            return res.status(400).json(validatorResult.error)
+
+            if (req.files?.length >= 0) {
+                unlinkMultipleFiles(req.files);
+            }
+
+            return res.status(400).json(validatorResult.error.details[0].message);
         } else {
             next();
         }
@@ -41,7 +53,18 @@ const schemas = {
         username: Joi.string().alphanum().min(4).max(20).required(),
         password: Joi.string().alphanum().min(6).max(20).required(),
     }),
-    
+
+    productScheme: Joi.object().keys({
+        name: Joi.string().min(4).max(30).required(),
+        memory: Joi.number().valid(32, 64, 128, 256, 512).required(),
+        salePercent: Joi.number().min(0).max(90),
+        screenSize: Joi.number().required(),
+        price: Joi.number().required().min(100000),
+        description: Joi.string().required(),
+        amount: Joi.number().min(0).required(),
+        categoryId: Joi.string().required(),
+    })
+
 }
 
 module.exports = {

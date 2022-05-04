@@ -21,10 +21,10 @@ app.use(express.json());
 
 // static url
 app.use(express.static(path.join(__dirname, 'public')));
-// handlebars
 
+// handlebars
 const exphbs = require('express-handlebars')
-app.engine('hbs', exphbs.create({ extname: '.hbs' }).engine)
+app.engine('hbs', exphbs.create({ extname: '.hbs' }).engine);
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'resources/views'));
 
@@ -32,10 +32,10 @@ app.set('views', path.join(__dirname, 'resources/views'));
 const morgan = require('morgan');
 app.use(morgan('combined'));
 
+
 //route
 const route = require('./routes/index');
 route(app);
-
 
 // database connect
 const db = require('../database/');
