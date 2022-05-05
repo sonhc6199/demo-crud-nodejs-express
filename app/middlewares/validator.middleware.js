@@ -1,5 +1,6 @@
 const Joi = require('@hapi/joi')
 const { unlinkSingleFile, unlinkMultipleFiles } = require('../../src/helpers/unlink.helper');
+
 const validateBody = (schema) => {
 
     return (req, res, next) => {
@@ -54,16 +55,22 @@ const schemas = {
         password: Joi.string().alphanum().min(6).max(20).required(),
     }),
 
-    productScheme: Joi.object().keys({
+    productSchema: Joi.object().keys({
         name: Joi.string().min(4).max(30).required(),
         memory: Joi.number().valid(32, 64, 128, 256, 512).required(),
-        salePercent: Joi.number().min(0).max(90),
+        salePercent: Joi.number().min(0).max(90).required(),
         screenSize: Joi.number().required(),
-        price: Joi.number().required().min(100000),
+        price: Joi.number().min(100000).required(),
         description: Joi.string().required(),
         amount: Joi.number().min(0).required(),
+        color: Joi.string().valid('blue', 'red', 'gold', 'purple', 'white', 'black').required(),
         categoryId: Joi.string().required(),
+    }),
+
+    categorySchema: Joi.object().keys({
+        name: Joi.string().min(2).required(),
     })
+
 
 }
 
