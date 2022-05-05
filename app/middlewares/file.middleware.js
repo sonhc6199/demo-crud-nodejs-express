@@ -25,13 +25,10 @@ const utilMultipleUpload = util.promisify(uploadManyFiles);
 
 const utilSingleleUpload = util.promisify(uploadSingleFile);
 
-
-// const debug = console.log.bind(console);
-
 const multipleUpload = async (req, res, next) => {
 
     try {
-        
+
         await utilMultipleUpload(req, res);
 
         if (req.files.length <= 0) {
@@ -49,10 +46,10 @@ const multipleUpload = async (req, res, next) => {
 };
 
 const singleUpload = async (req, res, next) => {
-    try {
-        await utilSingleleUpload(req, res);
 
-        
+    try {
+
+        await utilSingleleUpload(req, res);
 
         if (!req.file) {
             return res.status(400).json({ message: 'You must select at least 1 file.' });
@@ -68,7 +65,24 @@ const singleUpload = async (req, res, next) => {
     }
 };
 
+const updateSingleFile = async (req, res, next) => {
+
+    try {
+
+        await utilSingleleUpload(req, res);
+
+        next();
+
+    } catch (error) {
+
+        if (error.code === 'LIMIT_UNEXPECTED_FILE') return res.status(400).json({ message: 'Exceeds the number of files allowed to upload.' });
+
+        return res.status(400).json({ message: `Error when trying upload single file: ${error}` });
+    }
+};
+
 module.exports = {
     singleUpload,
     multipleUpload,
+    updateSingleFile
 };

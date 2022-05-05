@@ -4,6 +4,8 @@ const Product = require('../models/Product');
 
 const { unlinkSingleFile } = require('../../src/helpers/unlink.helper');
 
+const { unlink } = require('fs/promises');
+
 const CURRENT_PAGE = 1;
 const CURRENT_LIMIT = 6;
 
@@ -70,11 +72,48 @@ class ProductController {
 
     async updateProduct(req, res) {
 
+        const { name, memory, salePercent, screenSize, price, description, amount, color, categoryId } = req.body;
+
+        const product = await Product.findById(req.params.productId);
+        
+        const category = await Category.findById(categoryId);
+
+
+        if (!category) {
+            unlinkSingleFile(req.file);
+            return res.json({ message: 'Category is not exist.' });
+        }
+
+        let slug = name.split(' ').join('-');
+
+        const productCount = await Product.find({ name }).count();
+
+        if (productCount > 0) slug += `-${productCount}`;
+
+        if (req.file) {
+            const filePath = `public/images/${product.avatar}`;
+
+            unlink(filePath);
+        }
+
+
     }
 
     async deleteProduct(req, res) {
-        const deleteResponse = await Product.deleteOne({ _id: req.params.productId });
-        res.status(200).json({ message: `Deleted ${deleteResponse.deletedCount} record.` });
+
+        const product = await Product.findById(req.params.productId);
+
+        if (!product) {
+            return res.status(200).json({ message: `Deleted 0 record.` });
+        }
+
+        const filePath = `public/images/${product.avatar}`;
+
+        unlink(filePath);
+
+        await Product.deleteOne({ _id: req.params.productId });
+
+        res.status(200).json({ message: `Deleted 1 record.` });
     }
 
     async productDetail(req, res) {
