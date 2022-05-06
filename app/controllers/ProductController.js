@@ -62,7 +62,9 @@ class ProductController {
       .skip(limit * (page - 1))
       .limit(limit);
 
-    const productCount = await Product.count();
+    const productCount = await Product.find({
+      categoryId: categoryId ? categoryId : { $ne: categoryId },
+    }).count();
 
     const totalPages =
       productCount % limit == 0
@@ -83,7 +85,7 @@ class ProductController {
     const newProduct = req.file
       ? { ...req.body, avatar: req.file.filename }
       : req.body;
-      
+
     // check category and unlink file upload if not exist
     if (!(await Category.findById(newProduct.categoryId))) {
       unlinkSingleFile(req.file.path);
