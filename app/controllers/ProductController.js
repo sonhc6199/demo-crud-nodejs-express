@@ -7,6 +7,7 @@ const CURRENT_PAGE = 1;
 const CURRENT_LIMIT = 6;
 
 class ProductController {
+
   async addProduct(req, res) {
     const {
       name,
@@ -121,6 +122,7 @@ class ProductController {
     const product = await Product.findOne({ slug: req.params.slug });
     res.status(200).json({ product });
   }
+
 }
 
-module.exports = new ProductController();
+module.exports = new ProductController;
