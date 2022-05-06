@@ -31,7 +31,7 @@ const multipleUpload = async (req, res, next) => {
 
         await utilMultipleUpload(req, res);
 
-        if (req.files.length <= 0) {
+        if (req.files.length <= 0 && req.method.toLowerCase() == 'post') {
             return res.status(400).json({ message: 'You must select at least 1 file or more.' });
         }
 
@@ -51,7 +51,7 @@ const singleUpload = async (req, res, next) => {
 
         await utilSingleleUpload(req, res);
 
-        if (!req.file) {
+        if (!req.file && req.method.toLowerCase() == 'post') {
             return res.status(400).json({ message: 'You must select at least 1 file.' });
         }
 
@@ -65,24 +65,9 @@ const singleUpload = async (req, res, next) => {
     }
 };
 
-const updateSingleFile = async (req, res, next) => {
 
-    try {
-
-        await utilSingleleUpload(req, res);
-
-        next();
-
-    } catch (error) {
-
-        if (error.code === 'LIMIT_UNEXPECTED_FILE') return res.status(400).json({ message: 'Exceeds the number of files allowed to upload.' });
-
-        return res.status(400).json({ message: `Error when trying upload single file: ${error}` });
-    }
-};
 
 module.exports = {
     singleUpload,
-    multipleUpload,
-    updateSingleFile
+    multipleUpload
 };

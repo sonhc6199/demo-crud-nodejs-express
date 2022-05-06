@@ -1,7 +1,7 @@
 const { unlink } = require('fs/promises');
 
-const unlinkSingleFile = (file) => {
-    unlink(file.path);
+const unlinkSingleFile = (filePath) => {
+    unlink(filePath);
 }
 
 const unlinkMultipleFiles = (files) => {

@@ -1,126 +1,124 @@
+const Category = require("../models/Category");
+const Product = require("../models/Product");
 
-const Category = require('../models/Category');
-const Product = require('../models/Product');
-
-const { unlinkSingleFile } = require('../../src/helpers/unlink.helper');
-
-const { unlink } = require('fs/promises');
+const { unlinkSingleFile } = require("../../src/helpers/unlink.helper");
 
 const CURRENT_PAGE = 1;
 const CURRENT_LIMIT = 6;
 
 class ProductController {
+  async addProduct(req, res) {
+    const {
+      name,
+      memory,
+      salePercent,
+      screenSize,
+      price,
+      description,
+      amount,
+      color,
+      categoryId,
+    } = req.body;
 
-    async addProduct(req, res) {
-
-        const { name, memory, salePercent, screenSize, price, description, amount, color, categoryId } = req.body;
-
-        const category = await Category.findById(categoryId);
-
-        if (!category) {
-            unlinkSingleFile(req.file);
-            return res.json({ message: 'Category is not exist.' });
-        }
-
-        let slug = name.split(' ').join('-');
-
-        const productCount = await Product.find({ name }).count();
-
-        if (productCount > 0) slug += `-${productCount}`;
-
-        const newProduct = new Product({
-            avatar: req.file.filename,
-            name,
-            memory,
-            salePercent,
-            screenSize,
-            price,
-            description,
-            amount,
-            categoryId,
-            color,
-            slug
-        });
-
-        newProduct.save();
-
-        res.status(200).json({ message: 'Created successfully.' });
-
-
+    if (!(await Category.findById(categoryId))) {
+      unlinkSingleFile(req.file.path);
+      return res.status(400).json({ message: "Category is not exist." });
     }
 
-    async productList(req, res) {
+    const newProduct = new Product({
+      avatar: req.file.filename,
+      name,
+      memory,
+      salePercent,
+      screenSize,
+      price,
+      description,
+      amount,
+      categoryId,
+      color,
+    });
 
-        let { page, limit, categoryId } = req.query;
+    newProduct.save();
 
-        if (!Number.isInteger(Number(page))) {
-            page = CURRENT_PAGE;
-        }
+    res.status(200).json({ message: "Created successfully." });
+  }
 
-        if (!Number.isInteger(Number(limit))) {
-            limit = CURRENT_LIMIT;
-        }
+  async productList(req, res) {
+    let { page, limit, categoryId } = req.query;
 
-        const productList = await Product.find({ categoryId: categoryId ? categoryId : { $ne: categoryId } }).sort({ createdAt: -1 }).skip(limit * (page - 1)).limit(limit);
-
-        const productCount = await Product.count();
-
-        const totalPages = productCount % limit == 0 ? productCount / limit : (productCount - productCount % limit) / limit + 1;
-
-        res.status(200).json({ productList, page, perPage: limit, totalPages, totalItems: productCount });
+    if (!Number.isInteger(Number(page))) {
+      page = CURRENT_PAGE;
     }
 
-    async updateProduct(req, res) {
-
-        const { name, memory, salePercent, screenSize, price, description, amount, color, categoryId } = req.body;
-
-        const product = await Product.findById(req.params.productId);
-        
-        const category = await Category.findById(categoryId);
-
-
-        if (!category) {
-            unlinkSingleFile(req.file);
-            return res.json({ message: 'Category is not exist.' });
-        }
-
-        let slug = name.split(' ').join('-');
-
-        const productCount = await Product.find({ name }).count();
-
-        if (productCount > 0) slug += `-${productCount}`;
-
-        if (req.file) {
-            const filePath = `public/images/${product.avatar}`;
-
-            unlink(filePath);
-        }
-
-
+    if (!Number.isInteger(Number(limit))) {
+      limit = CURRENT_LIMIT;
     }
 
-    async deleteProduct(req, res) {
+    // filter by categoryId when it have value
+    const productList = await Product.find({
+      categoryId: categoryId ? categoryId : { $ne: categoryId },
+    })
+      .sort({ createdAt: -1 })
+      .skip(limit * (page - 1))
+      .limit(limit);
 
-        const product = await Product.findById(req.params.productId);
+    const productCount = await Product.count();
 
-        if (!product) {
-            return res.status(200).json({ message: `Deleted 0 record.` });
-        }
+    const totalPages =
+      productCount % limit == 0
+        ? productCount / limit
+        : (productCount - (productCount % limit)) / limit + 1;
 
-        const filePath = `public/images/${product.avatar}`;
+    res.status(200).json({
+      productList,
+      page,
+      perPage: limit,
+      totalPages,
+      totalItems: productCount,
+    });
+  }
 
-        unlink(filePath);
+  async updateProduct(req, res) {
 
-        await Product.deleteOne({ _id: req.params.productId });
-
-        res.status(200).json({ message: `Deleted 1 record.` });
+    const newProduct = req.file
+      ? { ...req.body, avatar: req.file.filename }
+      : req.body;
+      
+    // check category and unlink file upload if not exist
+    if (!(await Category.findById(newProduct.categoryId))) {
+      unlinkSingleFile(req.file.path);
+      return res
+        .status(400)
+        .json({ message: "categoryId field is not exist." });
     }
 
-    async productDetail(req, res) {
-        const product = await Product.findOne({ slug: req.params.slug });
-        res.status(200).json({ product });
+    const updateResponse = await Product.updateOne(
+      { _id: req.params.productId },
+      newProduct
+    );
+
+    // unlink file upload if don't have record update
+    if (updateResponse.modifiedCount == 0 && req.file) {
+      unlinkSingleFile(req.file.path);
     }
 
+    res
+      .status(200)
+      .json({ message: `Updated ${updateResponse.modifiedCount} record` });
+  }
+
+  async deleteProduct(req, res) {
+
+    const deleteResponse = await Product.deleteOne({ _id: req.params.productId });
+
+    res.status(200).json({ message: `Deleted ${deleteResponse.deletedCount} record.` });
+
+  }
+
+  async productDetail(req, res) {
+    const product = await Product.findOne({ slug: req.params.slug });
+    res.status(200).json({ product });
+  }
 }
 
-module.exports = new ProductController
+module.exports = new ProductController();

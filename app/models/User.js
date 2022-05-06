@@ -30,8 +30,4 @@ User.methods.isValidPassword = async function (enterPassword) {
     }
 }
 
-User.methods.hasRole = async function (userID) {
-    return await User.findById(userID) ?? '';
-}
-
 module.exports = mongoose.model('User', User);
