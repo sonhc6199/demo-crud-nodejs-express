@@ -4,7 +4,7 @@ const Product = require("../models/Product");
 const { unlinkSingleFile } = require("../../src/helpers/unlink.helper");
 
 const CURRENT_PAGE = 1;
-const CURRENT_LIMIT = 6;
+const CURRENT_LIMIT = 10;
 
 class ProductController {
 
@@ -41,7 +41,7 @@ class ProductController {
 
     newProduct.save();
 
-    res.status(200).json({ message: "Created successfully." });
+    res.status(200).json({ newProduct });
   }
 
   async productList(req, res) {
@@ -74,16 +74,16 @@ class ProductController {
 
     res.status(200).json({
       productList,
-      page,
-      perPage: limit,
-      totalPages,
+      page: Number(page),
+      perPage: Number(limit),
+      totalPages: Number(totalPages),
       totalItems: productCount,
     });
   }
 
   async updateProduct(req, res) {
 
-    const newProduct = req.file
+    let newProduct = req.file
       ? { ...req.body, avatar: req.file.filename }
       : req.body;
 
@@ -100,14 +100,18 @@ class ProductController {
       newProduct
     );
 
+
+
     // unlink file upload if don't have record update
     if (updateResponse.modifiedCount == 0 && req.file) {
       unlinkSingleFile(req.file.path);
     }
 
+    newProduct = await Product.findById(req.params.productId);
+
     res
       .status(200)
-      .json({ message: `Updated ${updateResponse.modifiedCount} record` });
+      .json({ newProduct });
   }
 
   async deleteProduct(req, res) {
