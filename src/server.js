@@ -20,7 +20,7 @@ app.use(express.urlencoded({
 app.use(express.json());
 
 // static url
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '/../public')));
 
 // handlebars
 const exphbs = require('express-handlebars')

@@ -60,9 +60,9 @@ const schemas = {
     memory: Joi.number().valid(32, 64, 128, 256, 512).required(),
     salePercent: Joi.number().min(0).max(90).required(),
     screenSize: Joi.number().required(),
-    price: Joi.number().min(100000).required(),
+    price: Joi.number().min(100001).required(),
     description: Joi.string().required(),
-    amount: Joi.number().min(0).required(),
+    amount: Joi.number().min(1).required(),
     color: Joi.string()
       .valid("blue", "red", "gold", "purple", "white", "black")
       .required(),

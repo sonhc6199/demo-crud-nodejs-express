@@ -8,14 +8,14 @@ const { schemas, validateBody, validateParam } = require('../../app/middlewares/
 
 const { singleUpload } = require('../../app/middlewares/file.middleware');
 
-router.get('/', ProductController.productList);
+router.get('/get-data', ProductController.productList);
 
 router.get('/:slug', ProductController.productDetail);
 
-router.post('/', singleUpload, validateBody(schemas.productSchema), ProductController.addProduct);
+router.post('/add', singleUpload, validateBody(schemas.productSchema), ProductController.addProduct);
 
-router.put('/:productId', singleUpload, validateBody(schemas.productSchema), ProductController.updateProduct);
+router.put('/edit/:productId', singleUpload, validateBody(schemas.productSchema), ProductController.updateProduct);
 
-router.delete('/:productId', ProductController.deleteProduct);
+router.delete('/delete/:productId', ProductController.deleteProduct);
 
 module.exports = router
