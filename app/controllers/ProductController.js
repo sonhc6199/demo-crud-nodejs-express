@@ -86,7 +86,7 @@ class ProductController {
     let newProduct = req.file
       ? { ...req.body, avatar: req.file.filename }
       : req.body;
-
+      
     // check category and unlink file upload if not exist
     if (!(await Category.findById(newProduct.categoryId))) {
       unlinkSingleFile(req.file.path);

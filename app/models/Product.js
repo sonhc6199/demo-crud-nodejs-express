@@ -49,8 +49,9 @@ Product.pre('updateOne', async function (next) {
       let slug = this._update.name.split(" ").join("-");
       const productCount = await productModel.find({ name: this._update.name }).count();
       if (productCount > 0) slug += `-${productCount}`;
-      this.slug = slug;
+      this._update.slug = slug;
     }
+
     // delete filePath of old product if avatar have change
     if (this._update.avatar) {
 
